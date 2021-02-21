@@ -2,6 +2,7 @@ package spring.transactions.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 import spring.transactions.entity.Singer;
@@ -12,29 +13,15 @@ import javax.persistence.PersistenceContext;
 import java.util.List;
 
 @Service
+@EnableTransactionManagement
 @Transactional
 public class SingerServiceImpl implements SingerService {
 
     private SingerRepository repository;
 
-    private TransactionTemplate transactionTemplate;
-
-    private EntityManager em;
-
-    @PersistenceContext
-    public void setEm(EntityManager em) {
-        this.em = em;
-    }
-
     @Autowired
     public void setSingerRepository(SingerRepository repository) {
         this.repository = repository;
-    }
-
-
-    @Autowired
-    public void setTransactionTemplate(TransactionTemplate transactionTemplate) {
-        this.transactionTemplate = transactionTemplate;
     }
 
     @Override
@@ -55,11 +42,8 @@ public class SingerServiceImpl implements SingerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Long countAllSingers() {
-        return transactionTemplate.execute(
-                transactionStatus -> em
-                        .createNamedQuery(Singer.COUNT_ALL, Long.class)
-                        .getSingleResult()
-        );
+        return repository.countAllSingers();
     }
 }
