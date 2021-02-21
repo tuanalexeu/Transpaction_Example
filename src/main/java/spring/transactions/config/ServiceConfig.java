@@ -1,42 +1,37 @@
 package spring.transactions.config;
 
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
+import org.springframework.context.annotation.Primary;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.transaction.support.TransactionTemplate;
-
-import javax.persistence.EntityManagerFactory;
+import javax.sql.DataSource;
 
 @Configuration
 @EnableTransactionManagement
 @ComponentScan(basePackages = {"spring.transactions.*"})
 public class ServiceConfig {
 
-    private EntityManagerFactory entityManagerFactory;
-
-    @Autowired
-    public void setEntityManagerFactory(EntityManagerFactory entityManagerFactory) {
-        this.entityManagerFactory = entityManagerFactory;
+    @Bean
+    @Primary
+    @ConfigurationProperties(prefix = "spring.database")
+    public DataSource dataSource() {
+        return DataSourceBuilder.create().build();
     }
 
     @Bean
-    public PlatformTransactionManager transactionManager() {
-        return new JpaTransactionManager(entityManagerFactory);
+    @ConfigurationProperties(prefix="spring.second-datasource")
+    public DataSource secondaryDataSource() {
+        return DataSourceBuilder.create().build();
     }
-
 
     @Bean
-    public TransactionTemplate transactionTemplate() {
-        TransactionTemplate tt = new TransactionTemplate();
-        tt.setPropagationBehavior(TransactionDefinition.PROPAGATION_NEVER);
-        tt.setTimeout(30);
-        tt.setTransactionManager(transactionManager());
-        return tt;
+    @ConfigurationProperties(prefix="spring.third-datasource")
+    public DataSource thirdDataSource() {
+        return DataSourceBuilder.create().build();
     }
+
 }
